@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KvízTour – Ponttábla</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f0f1a;
+      --surface:   #1a1a2e;
+      --surface2:  #16213e;
+      --border:    #2a2a4a;
+      --accent:    #7c3aed;
+      --accent-h:  #6d28d9;
+      --accent-lit:#a855f7;
+      --gold:      #f59e0b;
+      --silver:    #94a3b8;
+      --bronze:    #c2773a;
+      --red:       #ef4444;
+      --red-h:     #dc2626;
+      --green:     #22c55e;
+      --text:      #f1f5f9;
+      --text-muted:#94a3b8;
+      --radius:    12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a0a2e 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 24px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% -20%, rgba(124,58,237,.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .logo { position: relative; }
+    .logo-trophy { font-size: 2.8rem; line-height: 1; }
+    .logo-title {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 800;
+      background: linear-gradient(90deg, #a855f7, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+      margin-top: 4px;
+    }
+    .logo-sub {
+      font-size: .9rem;
+      color: var(--text-muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 20px;
+    }
+    section h2 {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── CONTROLS ROW ── */
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .control-group {
+      display: flex;
+      gap: 8px;
+      flex: 1 1 240px;
+    }
+    .control-group input[type="text"] {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: .9rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .control-group input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,58,237,.2);
+    }
+    .control-group input[type="text"]::placeholder { color: var(--text-muted); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: .875rem;
+      font-weight: 600;
+      padding: 10px 18px;
+      transition: background .2s, transform .1s, box-shadow .2s;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .btn:active { transform: scale(.97); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent-h); box-shadow: 0 4px 15px rgba(124,58,237,.4); }
+
+    .btn-danger {
+      background: var(--red);
+      color: #fff;
+    }
+    .btn-danger:hover { background: var(--red-h); box-shadow: 0 4px 15px rgba(239,68,68,.4); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+    .btn-icon {
+      padding: 6px 8px;
+      font-size: .8rem;
+      border-radius: 6px;
+    }
+
+    /* ── SCORE GRID ── */
+    .grid-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .score-grid {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      min-width: 400px;
+    }
+    .score-grid th {
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 10px 12px;
+      text-align: center;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .score-grid th:first-child { text-align: left; border-radius: var(--radius-sm) 0 0 0; }
+    .score-grid th:last-child  { border-radius: 0 var(--radius-sm) 0 0; }
+
+    .score-grid td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      vertical-align: middle;
+    }
+    .score-grid tr:last-child td { border-bottom: none; }
+    .score-grid td:first-child {
+      text-align: left;
+      min-width: 140px;
+    }
+
+    .team-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .team-name-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed transparent;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .9rem;
+      font-weight: 600;
+      flex: 1;
+      min-width: 80px;
+      padding: 2px 4px;
+      outline: none;
+      transition: border-color .2s, background .2s;
+      border-radius: 4px;
+    }
+    .team-name-input:hover {
+      border-bottom-color: var(--border);
+    }
+    .team-name-input:focus {
+      border-bottom-color: var(--accent);
+      background: rgba(124,58,237,.08);
+    }
+
+    .round-header-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .round-name-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed var(--border);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-align: center;
+      width: 80px;
+      padding: 2px 4px;
+      outline: none;
+      transition: border-color .2s, color .2s;
+    }
+    .round-name-input:focus {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .score-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .95rem;
+      font-weight: 600;
+      padding: 7px 6px;
+      text-align: center;
+      width: 70px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      -moz-appearance: textfield;
+    }
+    .score-input::-webkit-outer-spin-button,
+    .score-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .score-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,58,237,.2);
+      background: #1e1e38;
+    }
+    .score-input.flash {
+      animation: scoreFlash .4s ease;
+    }
+    @keyframes scoreFlash {
+      0%   { background: rgba(124,58,237,.5); }
+      100% { background: var(--surface2); }
+    }
+
+    .row-total {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent-lit);
+      min-width: 56px;
+    }
+
+    .score-grid tr:hover td { background: rgba(255,255,255,.02); }
+
+    /* empty state */
+    .empty-hint {
+      color: var(--text-muted);
+      font-size: .85rem;
+      text-align: center;
+      padding: 24px 0 8px;
+    }
+
+    /* ── LEADERBOARD ── */
+    .leaderboard { list-style: none; }
+    .lb-item {
+      display: grid;
+      grid-template-columns: 48px 1fr auto auto;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .35s, border-color .35s, background .35s;
+      will-change: transform;
+    }
+    .lb-item.rank-1 {
+      border-color: var(--gold);
+      background: linear-gradient(90deg, rgba(245,158,11,.12) 0%, var(--surface2) 60%);
+      box-shadow: 0 0 20px rgba(245,158,11,.15);
+    }
+    .lb-item.rank-2 {
+      border-color: var(--silver);
+      background: linear-gradient(90deg, rgba(148,163,184,.08) 0%, var(--surface2) 60%);
+    }
+    .lb-item.rank-3 {
+      border-color: var(--bronze);
+      background: linear-gradient(90deg, rgba(194,119,58,.08) 0%, var(--surface2) 60%);
+    }
+
+    .lb-rank {
+      font-size: 1.4rem;
+      text-align: center;
+      line-height: 1;
+    }
+    .lb-rank-num {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .lb-name {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .lb-rounds {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .lb-round-chip {
+      background: rgba(255,255,255,.06);
+      border-radius: 4px;
+      font-size: .72rem;
+      padding: 2px 7px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .lb-total {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent-lit);
+      min-width: 48px;
+      text-align: right;
+    }
+    .lb-item.rank-1 .lb-total { color: var(--gold); }
+    .lb-item.rank-2 .lb-total { color: var(--silver); }
+    .lb-item.rank-3 .lb-total { color: var(--bronze); }
+
+    /* ── FOOTER RESET ── */
+    .reset-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 28px;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      max-width: 380px;
+      width: 90%;
+      transform: translateY(20px) scale(.97);
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    .modal-overlay.open .modal { transform: none; }
+    .modal h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+    .modal p  { color: var(--text-muted); font-size: .9rem; line-height: 1.6; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--accent);
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 22px;
+      font-size: .875rem;
+      font-weight: 600;
+      z-index: 200;
+      pointer-events: none;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+      opacity: 0;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      header { padding: 20px 16px 18px; }
+      section { padding: 16px 14px; }
+      .lb-item { grid-template-columns: 40px 1fr auto; }
+      .lb-rounds { display: none; }
+      .lb-total { min-width: 36px; font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-trophy">🏆</div>
+    <div class="logo-title">KvízTour</div>
+    <div class="logo-sub">Ponttábla</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- CONTROLS -->
+  <section>
+    <h2>Csapatok &amp; Körök</h2>
+    <div class="controls-row">
+      <div class="control-group">
+        <input type="text" id="newTeamInput" placeholder="Csapat neve…" maxlength="40" />
+        <button class="btn btn-primary" onclick="addTeam()">
+          <span>＋</span> Csapat
+        </button>
+      </div>
+      <div class="control-group">
+        <input type="text" id="newRoundInput" placeholder="Kör neve (pl. 1. kör)…" maxlength="30" />
+        <button class="btn btn-primary" onclick="addRound()">
+          <span>＋</span> Kör
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCORE GRID -->
+  <section>
+    <h2>Pontbevitel</h2>
+    <div class="grid-wrapper">
+      <table class="score-grid" id="scoreGrid">
+        <thead id="gridHead"></thead>
+        <tbody id="gridBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-hint" id="gridEmptyHint" style="display:none">
+      Adj hozzá legalább egy csapatot és egy kört a pontbevitelhez.
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section>
+    <h2>Élőranglista</h2>
+    <ul class="leaderboard" id="leaderboard"></ul>
+    <div class="empty-hint" id="lbEmptyHint" style="display:none">
+      Még nincs elég adat a ranglista megjelenítéséhez.
+    </div>
+  </section>
+
+  <!-- RESET -->
+  <div class="reset-bar">
+    <button class="btn btn-ghost" onclick="openResetModal()">
+      🔄 Új kvíz indítása
+    </button>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <h3>Biztosan törli az összes adatot?</h3>
+    <p>Ez az összes csapatot, kört és pontszámot véglegesen törli. A visszaállítás nem lehetséges.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeResetModal()">Mégsem</button>
+      <button class="btn btn-danger" onclick="confirmReset()">Törlés</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────── */
+const LS_KEY = 'kviztour_state_v1';
+
+let state = {
+  teams:  [],   // [{id, name}]
+  rounds: [],   // [{id, name}]
+  scores: {}    // scores[teamId][roundId] = number
+};
+
+function newId() {
+  return Math.random().toString(36).slice(2, 9);
+}
+
+/* ─────────────────────────────────────────────
+   PERSISTENCE
+───────────────────────────────────────────── */
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.teams)) state = parsed;
+    }
+  } catch(e) {}
+}
+
+/* ─────────────────────────────────────────────
+   TEAMS
+───────────────────────────────────────────── */
+function addTeam() {
+  const input = document.getElementById('newTeamInput');
+  const name = input.value.trim();
+  if (!name) { input.focus(); return; }
+
+  const id = newId();
+  state.teams.push({ id, name });
+  if (!state.scores[id]) state.scores[id] = {};
+  input.value = '';
+  save();
+  render();
+  showToast(`„${name}" csapat hozzáadva`);
+  input.focus();
+}
+
+function removeTeam(id) {
+  state.teams = state.teams.filter(t => t.id !== id);
+  delete state.scores[id];
+  save();
+  render();
+}
+
+function updateTeamName(id, name) {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  const team = state.teams.find(t => t.id === id);
+  if (team && team.name !== trimmed) {
+    team.name = trimmed;
+    save();
+    renderLeaderboard();
+  }
+}
+
+/* ─────────────────────────────────────────────
+   ROUNDS
+───────────────────────────────────────────── */
+function addRound() {
+  const input = document.getElementById('newRoundInput');
+  const num   = state.rounds.length + 1;
+  const name  = input.value.trim() || `${num}. kör`;
+
+  const id = newId();
+  state.rounds.push({ id, name });
+  input.value = '';
+  save();
+  render();
+  showToast(`„${name}" kör hozzáadva`);
+}
+
+function removeRound(id) {
+  state.rounds = state.rounds.filter(r => r.id !== id);
+  for (const tid in state.scores) { delete state.scores[tid][id]; }
+  save();
+  render();
+}
+
+function updateRoundName(id, name) {
+  const round = state.rounds.find(r => r.id === id);
+  if (round) { round.name = name; save(); renderLeaderboard(); }
+}
+
+/* ─────────────────────────────────────────────
+   SCORES
+───────────────────────────────────────────── */
+function setScore(teamId, roundId, raw) {
+  const val = raw === '' ? 0 : parseFloat(raw);
+  if (isNaN(val) || val < 0) return;
+  if (!state.scores[teamId]) state.scores[teamId] = {};
+  state.scores[teamId][roundId] = val;
+  save();
+  renderLeaderboard();
+  updateRowTotal(teamId);
+}
+
+function getScore(teamId, roundId) {
+  return state.scores?.[teamId]?.[roundId] ?? 0;
+}
+
+function teamTotal(teamId) {
+  return state.rounds.reduce((s, r) => s + getScore(teamId, r.id), 0);
+}
+
+/* ─────────────────────────────────────────────
+   RENDER – GRID
+───────────────────────────────────────────── */
+function renderGrid() {
+  const head = document.getElementById('gridHead');
+  const body = document.getElementById('gridBody');
+  const hint = document.getElementById('gridEmptyHint');
+
+  if (!state.teams.length) {
+    head.innerHTML = '';
+    body.innerHTML = '';
+    hint.style.display = 'block';
+    return;
+  }
+  hint.style.display = 'none';
+
+  // header — show score columns only if rounds exist
+  let hRow = '<tr><th>Csapat</th>';
+  state.rounds.forEach(r => {
+    hRow += `<th>
+      <div class="round-header-cell">
+        <input class="round-name-input"
+               value="${escHtml(r.name)}"
+               title="Kör átnevezése"
+               onchange="updateRoundName('${r.id}', this.value)"
+               onblur="updateRoundName('${r.id}', this.value)" />
+        <button class="btn btn-danger btn-icon" title="Kör törlése"
+                onclick="removeRound('${r.id}')">✕</button>
+      </div>
+    </th>`;
+  });
+  if (state.rounds.length) hRow += '<th>Összesen</th>';
+  hRow += '</tr>';
+  head.innerHTML = hRow;
+
+  // rows
+  body.innerHTML = '';
+  state.teams.forEach(t => {
+    const tr = document.createElement('tr');
+    tr.dataset.teamId = t.id;
+
+    let html = `<td>
+      <div class="team-name-cell">
+        <input class="team-name-input"
+               value="${escHtml(t.name)}"
+               title="Csapat átnevezése"
+               placeholder="Csapat neve…"
+               onchange="updateTeamName('${t.id}', this.value)"
+               onblur="updateTeamName('${t.id}', this.value)" />
+        <button class="btn btn-danger btn-icon" title="Csapat törlése"
+                onclick="removeTeam('${t.id}')">✕</button>
+      </div>
+    </td>`;
+
+    state.rounds.forEach(r => {
+      const val = getScore(t.id, r.id);
+      html += `<td>
+        <input class="score-input"
+               type="number" min="0" step="0.5"
+               value="${val || ''}"
+               placeholder="0"
+               data-team="${t.id}" data-round="${r.id}"
+               onchange="handleScoreInput(this)"
+               oninput="sanitizeInput(this)" />
+      </td>`;
+    });
+
+    if (state.rounds.length) {
+      const total = teamTotal(t.id);
+      html += `<td class="row-total" id="total-${t.id}">${fmtNum(total)}</td>`;
+    }
+    tr.innerHTML = html;
+    body.appendChild(tr);
+  });
+}
+
+function updateRowTotal(teamId) {
+  const cell = document.getElementById(`total-${teamId}`);
+  if (cell) cell.textContent = fmtNum(teamTotal(teamId));
+}
+
+function handleScoreInput(el) {
+  const raw = el.value;
+  setScore(el.dataset.team, el.dataset.round, raw);
+  el.classList.remove('flash');
+  void el.offsetWidth; // reflow
+  el.classList.add('flash');
+}
+
+function sanitizeInput(el) {
+  el.value = el.value.replace(/[^0-9.]/g, '');
+}
+
+/* ─────────────────────────────────────────────
+   RENDER – LEADERBOARD
+───────────────────────────────────────────── */
+const RANK_MEDAL = ['🥇','🥈','🥉'];
+
+function renderLeaderboard() {
+  const ul   = document.getElementById('leaderboard');
+  const hint = document.getElementById('lbEmptyHint');
+
+  if (!state.teams.length) {
+    ul.innerHTML = '';
+    hint.style.display = 'block';
+    return;
+  }
+  hint.style.display = 'none';
+
+  // Sort teams by total desc, then name asc
+  const sorted = [...state.teams]
+    .map(t => ({ ...t, total: teamTotal(t.id) }))
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'hu'));
+
+  // Build new HTML but animate existing items
+  const existingItems = {};
+  ul.querySelectorAll('.lb-item[data-id]').forEach(el => {
+    existingItems[el.dataset.id] = el.getBoundingClientRect();
+  });
+
+  ul.innerHTML = '';
+  sorted.forEach((t, idx) => {
+    const rank  = idx + 1;
+    const medal = RANK_MEDAL[idx] ?? '';
+    const rankDisplay = medal
+      ? `<span class="lb-rank">${medal}</span>`
+      : `<span class="lb-rank-num">${rank}.</span>`;
+
+    const chips = state.rounds.map(r => {
+      const s = getScore(t.id, r.id);
+      return `<span class="lb-round-chip">${escHtml(r.name)}: <b>${fmtNum(s)}</b></span>`;
+    }).join('');
+
+    const li = document.createElement('li');
+    li.className = `lb-item rank-${rank <= 3 ? rank : 'n'}`;
+    li.dataset.id = t.id;
+    li.innerHTML = `
+      ${rankDisplay}
+      <span class="lb-name">${escHtml(t.name)}</span>
+      <div class="lb-rounds">${chips}</div>
+      <span class="lb-total">${fmtNum(t.total)}</span>`;
+    ul.appendChild(li);
+  });
+}
+
+/* ─────────────────────────────────────────────
+   FULL RENDER
+───────────────────────────────────────────── */
+function render() {
+  renderGrid();
+  renderLeaderboard();
+}
+
+/* ─────────────────────────────────────────────
+   RESET
+───────────────────────────────────────────── */
+function openResetModal()  { document.getElementById('resetModal').classList.add('open'); }
+function closeResetModal() { document.getElementById('resetModal').classList.remove('open'); }
+
+function confirmReset() {
+  state = { teams: [], rounds: [], scores: {} };
+  save();
+  closeResetModal();
+  render();
+  showToast('Kvíz törölve – kezdheted elölről!');
+}
+
+// Close modal on overlay click
+document.getElementById('resetModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResetModal();
+});
+
+/* ─────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+/* ─────────────────────────────────────────────
+   KEYBOARD SHORTCUTS
+───────────────────────────────────────────── */
+document.getElementById('newTeamInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTeam();
+});
+document.getElementById('newRoundInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addRound();
+});
+
+/* ─────────────────────────────────────────────
+   UTILS
+───────────────────────────────────────────── */
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function fmtNum(n) {
+  if (n === 0) return '0';
+  // Show up to one decimal if non-integer
+  return Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');
+}
+
+/* ─────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────── */
+load();
+render();
+</script>
+</body>
+</html>
