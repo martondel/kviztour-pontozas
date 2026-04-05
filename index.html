@@ -488,11 +488,11 @@
       section { padding: 14px 12px; margin-top: 14px; }
       .container { padding: 0 10px; }
 
-      /* Controls: stack vertically */
+      /* Controls: stack vertically, input+button each full width */
       .controls-row { flex-direction: column; gap: 10px; }
-      .control-group { flex: unset; width: 100%; }
-      .control-group input[type="text"] { font-size: .85rem; padding: 11px 12px; }
-      .btn { padding: 11px 14px; font-size: .85rem; }
+      .control-group { flex-direction: column; flex: unset; width: 100%; min-width: 0; }
+      .control-group input[type="text"] { width: 100%; font-size: .95rem; padding: 12px 14px; }
+      .btn { width: 100%; justify-content: center; padding: 12px 14px; font-size: .95rem; }
 
       /* Hide table, show cards */
       .grid-wrapper { display: none; }
