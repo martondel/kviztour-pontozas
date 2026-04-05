@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { overflow-x: hidden; }
 
     :root {
       --bg:        #0f0f1a;
@@ -36,6 +37,7 @@
       font-family: 'Poppins', sans-serif;
       min-height: 100vh;
       padding: 0 0 60px;
+      overflow-x: hidden;
     }
 
     /* ── HEADER ── */
@@ -165,16 +167,17 @@
       border-radius: 6px;
     }
 
-    /* ── SCORE GRID ── */
+    /* ── SCORE GRID (desktop table) ── */
     .grid-wrapper {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      max-width: 100%;
     }
     .score-grid {
       border-collapse: separate;
       border-spacing: 0;
       width: 100%;
-      min-width: 400px;
+      min-width: 0;
     }
     .score-grid th {
       background: var(--surface2);
@@ -202,7 +205,7 @@
     .score-grid tr:last-child td { border-bottom: none; }
     .score-grid td:first-child {
       text-align: left;
-      min-width: 140px;
+      min-width: 120px;
     }
 
     .team-name-cell {
@@ -219,19 +222,14 @@
       font-size: .9rem;
       font-weight: 600;
       flex: 1;
-      min-width: 80px;
+      min-width: 60px;
       padding: 2px 4px;
       outline: none;
       transition: border-color .2s, background .2s;
       border-radius: 4px;
     }
-    .team-name-input:hover {
-      border-bottom-color: var(--border);
-    }
-    .team-name-input:focus {
-      border-bottom-color: var(--accent);
-      background: rgba(124,58,237,.08);
-    }
+    .team-name-input:hover  { border-bottom-color: var(--border); }
+    .team-name-input:focus  { border-bottom-color: var(--accent); background: rgba(124,58,237,.08); }
 
     .round-header-cell {
       display: flex;
@@ -250,15 +248,12 @@
       letter-spacing: 1.5px;
       text-transform: uppercase;
       text-align: center;
-      width: 80px;
+      width: 72px;
       padding: 2px 4px;
       outline: none;
       transition: border-color .2s, color .2s;
     }
-    .round-name-input:focus {
-      border-color: var(--accent);
-      color: var(--text);
-    }
+    .round-name-input:focus { border-color: var(--accent); color: var(--text); }
 
     .score-input {
       background: var(--surface2);
@@ -270,7 +265,7 @@
       font-weight: 600;
       padding: 7px 6px;
       text-align: center;
-      width: 70px;
+      width: 64px;
       outline: none;
       transition: border-color .2s, box-shadow .2s, background .2s;
       -moz-appearance: textfield;
@@ -282,9 +277,7 @@
       box-shadow: 0 0 0 3px rgba(124,58,237,.2);
       background: #1e1e38;
     }
-    .score-input.flash {
-      animation: scoreFlash .4s ease;
-    }
+    .score-input.flash { animation: scoreFlash .4s ease; }
     @keyframes scoreFlash {
       0%   { background: rgba(124,58,237,.5); }
       100% { background: var(--surface2); }
@@ -294,10 +287,65 @@
       font-size: 1rem;
       font-weight: 700;
       color: var(--accent-lit);
-      min-width: 56px;
+      min-width: 48px;
     }
-
     .score-grid tr:hover td { background: rgba(255,255,255,.02); }
+
+    /* ── SCORE CARDS (mobile only) ── */
+    .score-cards { display: none; }
+    .score-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .score-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: rgba(124,58,237,.1);
+      border-bottom: 1px solid var(--border);
+    }
+    .score-card-header .team-name-input {
+      font-size: 1rem;
+      flex: 1;
+    }
+    .score-card-rows { padding: 6px 0; }
+    .score-card-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .score-card-row:last-child { border-bottom: none; }
+    .score-card-round-name {
+      font-size: .8rem;
+      color: var(--text-muted);
+      flex: 1;
+    }
+    .score-card-total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+    }
+    .score-card-total-label {
+      font-size: .8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .score-card-total-val {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent-lit);
+    }
 
     /* empty state */
     .empty-hint {
@@ -435,12 +483,38 @@
     }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 600px) {
-      header { padding: 20px 16px 18px; }
-      section { padding: 16px 14px; }
-      .lb-item { grid-template-columns: 40px 1fr auto; }
+    @media (max-width: 640px) {
+      header { padding: 18px 12px 16px; }
+      section { padding: 14px 12px; margin-top: 14px; }
+      .container { padding: 0 10px; }
+
+      /* Controls: stack vertically */
+      .controls-row { flex-direction: column; gap: 10px; }
+      .control-group { flex: unset; width: 100%; }
+      .control-group input[type="text"] { font-size: .85rem; padding: 11px 12px; }
+      .btn { padding: 11px 14px; font-size: .85rem; }
+
+      /* Hide table, show cards */
+      .grid-wrapper { display: none; }
+      .score-cards  { display: block; }
+
+      /* Mobile score input inside cards */
+      .score-input {
+        width: 72px;
+        font-size: .9rem;
+        padding: 8px 6px;
+      }
+
+      /* Leaderboard */
+      .lb-item { grid-template-columns: 36px 1fr auto; gap: 8px; padding: 10px 12px; }
       .lb-rounds { display: none; }
-      .lb-total { min-width: 36px; font-size: 1.1rem; }
+      .lb-total { min-width: 36px; font-size: 1.05rem; }
+      .lb-name  { font-size: .9rem; }
+      .lb-rank  { font-size: 1.2rem; }
+
+      /* Reset bar */
+      .reset-bar { justify-content: center; margin-top: 20px; }
+      .reset-bar .btn { width: 100%; justify-content: center; }
     }
   </style>
 </head>
@@ -485,6 +559,7 @@
         <tbody id="gridBody"></tbody>
       </table>
     </div>
+    <div class="score-cards" id="scoreCards"></div>
     <div class="empty-hint" id="gridEmptyHint" style="display:none">
       Adj hozzá legalább egy csapatot és egy kört a pontbevitelhez.
     </div>
@@ -720,6 +795,62 @@ function renderGrid() {
 function updateRowTotal(teamId) {
   const cell = document.getElementById(`total-${teamId}`);
   if (cell) cell.textContent = fmtNum(teamTotal(teamId));
+  // also update card total if visible
+  const cardTotal = document.getElementById(`card-total-${teamId}`);
+  if (cardTotal) cardTotal.textContent = fmtNum(teamTotal(teamId));
+}
+
+/* ─────────────────────────────────────────────
+   RENDER – MOBILE CARDS
+───────────────────────────────────────────── */
+function renderCards() {
+  const container = document.getElementById('scoreCards');
+  container.innerHTML = '';
+
+  if (!state.teams.length) return;
+
+  state.teams.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'score-card';
+
+    // header: team name + delete
+    let html = `<div class="score-card-header">
+      <input class="team-name-input"
+             value="${escHtml(t.name)}"
+             title="Csapat átnevezése"
+             placeholder="Csapat neve…"
+             onchange="updateTeamName('${t.id}', this.value)"
+             onblur="updateTeamName('${t.id}', this.value)" />
+      <button class="btn btn-danger btn-icon" title="Csapat törlése"
+              onclick="removeTeam('${t.id}')">✕</button>
+    </div>`;
+
+    if (state.rounds.length) {
+      html += '<div class="score-card-rows">';
+      state.rounds.forEach(r => {
+        const val = getScore(t.id, r.id);
+        html += `<div class="score-card-row">
+          <span class="score-card-round-name">${escHtml(r.name)}</span>
+          <input class="score-input"
+                 type="number" min="0" step="0.5"
+                 value="${val || ''}"
+                 placeholder="0"
+                 data-team="${t.id}" data-round="${r.id}"
+                 onchange="handleScoreInput(this)"
+                 oninput="sanitizeInput(this)" />
+        </div>`;
+      });
+      html += '</div>';
+      const total = teamTotal(t.id);
+      html += `<div class="score-card-total-row">
+        <span class="score-card-total-label">Összesen</span>
+        <span class="score-card-total-val" id="card-total-${t.id}">${fmtNum(total)}</span>
+      </div>`;
+    }
+
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
 }
 
 function handleScoreInput(el) {
@@ -791,6 +922,7 @@ function renderLeaderboard() {
 ───────────────────────────────────────────── */
 function render() {
   renderGrid();
+  renderCards();
   renderLeaderboard();
 }
 
